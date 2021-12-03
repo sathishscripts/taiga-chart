@@ -5,15 +5,56 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: taigaio/taiga
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+taiga: 
+  useSecret: false
+  secretName: "taiga-secret"
+  # Items used to create taiga-secret, if not 
+  # will be part of config-map. 
+  POSTGRES_DB: "taiga"
+  POSTGRES_USER: "taiga"
+  POSTGRES_PASSWORD: "taiga"
+  POSTGRES_HOST: "taiga-db"
+  POSTGRES_PORT: '5432'
+  TAIGA_SECRET_KEY: "taiga-back-secret-key"
+  RABBITMQ_USER: "taiga"
+  RABBITMQ_PASS: "taiga"
+  #Items used to create taiga-configmap
+  TAIGA_SITES_SCHEME: "http"
+  TAIGA_SITES_DOMAIN: "localhost:9000"
+  TAIGA_SUBPATH: "" # "" or "/subpath"
+  # Please free to add according to 
+  #   https://github.com/kaleidos-ventures/taiga-back/blob/main/docker/config.py
+  # Email settings. Uncomment following lines and configure your SMTP server
+  # EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+  # DEFAULT_FROM_EMAIL: "no-reply@example.com"
+  # EMAIL_USE_TLS: "False"
+  # EMAIL_USE_SSL: "False"
+  # EMAIL_HOST: "smtp.host.example.com"
+  # EMAIL_PORT: 587
+  # EMAIL_HOST_USER: "user"
+  # EMAIL_HOST_PASSWORD: "password"
+  # Rabbitmq settings
+  # Should be the same as in taiga-async-rabbitmq and taiga-events-rabbitmq
+  # Telemetry settings
+  ENABLE_TELEMETRY: "True"
+  CELERY_ENABLED:  "False"
+
+
+persistence:
+  deployPostgres: false
+  enabled: false
+  storageClass: ""
+
+    
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -80,3 +121,29 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+
+### Any stable/postgres values can be defined here
+### 
+postgresql:
+
+  ### Create a postgres user, password and database
+  ###
+  postgresqlUsername: "taiga"
+  postgresqlPassword: "taiga"
+  postgresqlDatabase: "taiga"
+
+  persistence:
+    enabled: false
+    size: 2Gi
+    # annotations:
+    #   "helm.sh/resource-policy": keep
+
+    ### StorageClass for the provisioned PVC.
+    ###
+    # storageClass: ""
+
+    ### If you prefer using a PVC defined outside of this chart instead, uncomment this
+    ### Requires `postgresql.persistence.enabled: true`
+    ###
+    # existingClaim: ""

@@ -28,23 +28,39 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-back
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}-back:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8000
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/v1/projects
               port: http
+            initialDelaySeconds: 50
+            periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/v1/projects
               port: http
+            initialDelaySeconds: 50
+            periodSeconds: 10
+          envFrom:
+            {{- if .Values.taiga.useSecret }}    
+            - secretRef:
+                name: {{ .Values.taiga.secretName }}
+            {{- end }}
+            - configMapRef:
+                name: taiga-configmap
+          volumeMounts:
+            - name: taiga-static-data
+              mountPath: /taiga-back/static
+            - name: taiga-media-data
+              mountPath: /taiga-back/media
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -59,3 +75,19 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: taiga-static-data
+        {{- if .Values.persistence.enabled  }}
+        persistentVolumeClaim:
+          claimName: taiga-static
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: taiga-media-data
+        {{- if .Values.persistence.enabled  }}
+        persistentVolumeClaim:
+          claimName: taiga-media
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+

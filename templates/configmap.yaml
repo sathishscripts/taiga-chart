@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taiga-configmap
+data:
+  {{- if .Values.taiga.useSecret  }}
+  {{ else }}
+  POSTGRES_DB: {{ .Values.taiga.POSTGRES_DB | quote }}
+  POSTGRES_USER: {{ .Values.taiga.POSTGRES_USER | quote  }}
+  POSTGRES_PASSWORD: {{ .Values.taiga.POSTGRES_PASSWORD | quote  }}
+  POSTGRES_HOST: {{ .Values.taiga.POSTGRES_HOST | quote  }}
+  POSTGRES_PORT: {{ .Values.taiga.POSTGRES_PORT | quote }}
+  TAIGA_SECRET_KEY: {{ .Values.taiga.TAIGA_SECRET_KEY | quote }}
+  RABBITMQ_USER: {{ .Values.taiga.RABBITMQ_USER | quote }}
+  RABBITMQ_PASS: {{ .Values.taiga.RABBITMQ_PASS | quote }}
+  {{- end }}
+  

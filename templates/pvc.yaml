@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: taiga-media
+spec:
+    {{-  if .Values.persistence.enabled }}
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: 1Gi 
+    storageClassName: {{ .Values.persistence.storageClass }}
+    {{ end }}
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: taiga-static
+spec:
+    {{- if  .Values.persistence.enabled  }}
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: 1Gi 
+    storageClassName: {{ .Values.persistence.storageClass }}
+    {{ end }}
+
